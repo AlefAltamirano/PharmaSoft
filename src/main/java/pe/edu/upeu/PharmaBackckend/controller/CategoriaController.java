@@ -27,7 +27,7 @@ public class CategoriaController {
         );
     }
 
-    @GetMapping("/¨{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<CategoriaResponseDTO> findById(@PathVariable Long id){
         return ResponseEntity.ok(categoriaService.read(id)
         );

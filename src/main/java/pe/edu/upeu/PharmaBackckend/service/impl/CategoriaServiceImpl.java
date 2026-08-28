@@ -34,7 +34,7 @@ public class CategoriaServiceImpl implements CategoriaService {
         }
         Categoria categoria = new Categoria();
         categoria.setNombre(nommbre);
-        categoria.setDescripcion(nommbre);
+        categoria.setDescripcion(t.getDescripcion());
         categoria.setEstado(t.getEstado());
 
         Categoria catCategoria = categoriaRepository.save(categoria);
@@ -50,7 +50,7 @@ public class CategoriaServiceImpl implements CategoriaService {
                 "Categoria no encontrado con id" + aLong)
         );
         categoria.setNombre(t.getNombre());
-        categoria.setDescripcion(t.getNombre());
+        categoria.setDescripcion(t.getDescripcion());
         categoria.setEstado(t.getEstado());
 
         Categoria catActualizada = categoriaRepository.save(categoria);
