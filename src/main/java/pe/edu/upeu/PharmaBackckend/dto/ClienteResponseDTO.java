@@ -1,25 +1,24 @@
 package pe.edu.upeu.PharmaBackckend.dto;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
-public class ProductoResponseDTO {
+public class ClienteResponseDTO {
     private Long id;
-    private String nombre;
-    private String descripcion;
-    private BigDecimal precio;
-    private Integer stock;
+    private String dni;
+    private String nombres;
+    private String apellidos;
+    private String email;
+    private String telefono;
+    private String direccion;
     private Boolean estado;
     private LocalDateTime fechaCreacion;
     private LocalDateTime fechaModificacion;
-    private CategoriaDTO categoria;
 }

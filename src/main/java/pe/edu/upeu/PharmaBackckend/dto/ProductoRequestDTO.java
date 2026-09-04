@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -27,7 +29,7 @@ public class ProductoRequestDTO {
 
     @NotNull(message = "El precio es obligatorio")
     @Positive(message = "El precio debe ser un valor positivo")
-    private Double precio;
+    private BigDecimal precio;
 
     @NotNull(message = "El stock es obligatorio")
     @PositiveOrZero(message = "El stock no debe ser negativo")
