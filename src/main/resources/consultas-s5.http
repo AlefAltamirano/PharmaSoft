@@ -1,0 +1,48 @@
+### ==========================================
+### COLECCIÓN DE PETICIONES - SESIÓN 5 (RETO 02)
+### ==========================================
+
+### 1. Filtro individual por clienteId
+GET http://localhost:8080/api/v1/ventas/buscar?clienteId=1
+
+### 2. Filtro individual por rango de fechas (Agosto 2026)
+GET http://localhost:8080/api/v1/ventas/buscar?desde=2026-08-01T00:00:00&hasta=2026-08-31T23:59:59
+
+### 3. Filtro individual por estado (ANULADA)
+GET http://localhost:8080/api/v1/ventas/buscar?estado=ANULADA
+
+### 4. Filtro individual por estado (REGISTRADA)
+GET http://localhost:8080/api/v1/ventas/buscar?estado=REGISTRADA
+
+### 5. Combinación 1: clienteId + estado
+GET http://localhost:8080/api/v1/ventas/buscar?clienteId=1&estado=REGISTRADA
+
+### 6. Combinación 2: Todos los filtros combinados
+GET http://localhost:8080/api/v1/ventas/buscar?clienteId=1&estado=REGISTRADA&desde=2026-08-01T00:00:00&hasta=2026-09-30T23:59:59
+
+### 7. Ordenamiento 1: Total Ascendente
+GET http://localhost:8080/api/v1/ventas/buscar?ordenarPor=total&direccion=asc
+
+### 8. Ordenamiento 2: Total Descendente
+GET http://localhost:8080/api/v1/ventas/buscar?ordenarPor=total&direccion=desc
+
+### 9. Ordenamiento 3: Fecha Ascendente
+GET http://localhost:8080/api/v1/ventas/buscar?ordenarPor=fecha&direccion=asc
+
+### 10. Ordenamiento 4: Fecha Descendente
+GET http://localhost:8080/api/v1/ventas/buscar?ordenarPor=fecha&direccion=desc
+
+### 11. Búsqueda sin resultados (Debe responder 200 OK con [])
+GET http://localhost:8080/api/v1/ventas/buscar?clienteId=9999
+
+### 12. Ordenamiento inválido (Debe responder 409 Conflict)
+GET http://localhost:8080/api/v1/ventas/buscar?ordenarPor=cliente.dni
+
+### 13. Fecha mal formada (Debe responder 400 Bad Request)
+GET http://localhost:8080/api/v1/ventas/buscar?desde=15-08-2026
+
+### 14. Reporte: Ventas por Categoría
+GET http://localhost:8080/api/v1/reportes/ventas-por-categoria
+
+### 15. Reporte: Productos más Vendidos
+GET http://localhost:8080/api/v1/reportes/productos-mas-vendidos
