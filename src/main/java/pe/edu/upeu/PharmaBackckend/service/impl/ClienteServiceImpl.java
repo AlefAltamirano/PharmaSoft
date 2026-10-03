@@ -10,6 +10,7 @@ import pe.edu.upeu.PharmaBackckend.entity.Cliente;
 import pe.edu.upeu.PharmaBackckend.exception.RecursosNoEncontradosException;
 import pe.edu.upeu.PharmaBackckend.exception.ReglaNegocioException;
 import pe.edu.upeu.PharmaBackckend.repository.ClienteRepository;
+import pe.edu.upeu.PharmaBackckend.repository.VentaRepository;
 import pe.edu.upeu.PharmaBackckend.service.service.ClienteService;
 
 import java.util.List;
@@ -22,10 +23,13 @@ public class ClienteServiceImpl
             LoggerFactory.getLogger(ClienteServiceImpl.class);
 
     private final ClienteRepository clienteRepository;
+    private final VentaRepository ventaRepository;
 
     public ClienteServiceImpl(
-            ClienteRepository clienteRepository) {
+            ClienteRepository clienteRepository,
+            VentaRepository ventaRepository) {
         this.clienteRepository = clienteRepository;
+        this.ventaRepository = ventaRepository;
     }
 
     @Override
@@ -194,6 +198,12 @@ public class ClienteServiceImpl
                                         "Cliente no encontrado con id: " + id
                                 )
                         );
+
+        if (ventaRepository.existsByClienteId(id)) {
+            throw new ReglaNegocioException(
+                    "No se puede eliminar el cliente porque tiene ventas asociadas"
+            );
+        }
 
         clienteRepository.delete(cliente);
 

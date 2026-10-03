@@ -8,8 +8,6 @@ import pe.edu.upeu.PharmaBackckend.dto.CategoriaRequestDTO;
 import pe.edu.upeu.PharmaBackckend.dto.CategoriaResponseDTO;
 import pe.edu.upeu.PharmaBackckend.service.service.CategoriaService;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/v1/categorias")
 public class CategoriaController {
@@ -42,7 +40,6 @@ public class CategoriaController {
     public ResponseEntity<CategoriaResponseDTO> update(
             @PathVariable Long id,
         @Valid @RequestBody CategoriaRequestDTO requestDTO){
-        CategoriaResponseDTO response = categoriaService.create(requestDTO);
         return ResponseEntity.ok(
                 categoriaService.update(id, requestDTO)
         );

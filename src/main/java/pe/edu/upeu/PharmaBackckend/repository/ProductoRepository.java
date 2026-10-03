@@ -9,6 +9,8 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
     // Revisa si existe un producto con el mismo nombre (para evitar duplicados)
     boolean existsByNombreIgnoreCase(String nombre);
 
+    boolean existsByCategoriaId(Long categoriaId);
+
     // Consulta derivada para buscar todos los productos pertenecientes a una categoría
     List<Producto> findByCategoriaId(Long categoriaId);
 }

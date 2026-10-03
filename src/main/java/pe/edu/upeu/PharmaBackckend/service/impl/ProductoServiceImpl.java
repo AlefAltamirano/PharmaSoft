@@ -1,7 +1,5 @@
 package pe.edu.upeu.PharmaBackckend.service.impl;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pe.edu.upeu.PharmaBackckend.dto.CategoriaDTO;
@@ -12,6 +10,7 @@ import pe.edu.upeu.PharmaBackckend.entity.Producto;
 import pe.edu.upeu.PharmaBackckend.exception.RecursosNoEncontradosException;
 import pe.edu.upeu.PharmaBackckend.exception.ReglaNegocioException;
 import pe.edu.upeu.PharmaBackckend.repository.CategoriaRepository;
+import pe.edu.upeu.PharmaBackckend.repository.DetalleVentaRepository;
 import pe.edu.upeu.PharmaBackckend.repository.ProductoRepository;
 import pe.edu.upeu.PharmaBackckend.service.service.ProductoService;
 
@@ -19,14 +18,17 @@ import java.util.List;
 
 @Service
 public class ProductoServiceImpl implements ProductoService {
-        private static final Logger LOG = LoggerFactory.getLogger(ProductoServiceImpl.class);
-
         private final ProductoRepository productoRepository;
         private final CategoriaRepository categoriaRepository;
+        private final DetalleVentaRepository detalleVentaRepository;
 
-        public ProductoServiceImpl(ProductoRepository productoRepository, CategoriaRepository categoriaRepository) {
+        public ProductoServiceImpl(
+                ProductoRepository productoRepository,
+                CategoriaRepository categoriaRepository,
+                DetalleVentaRepository detalleVentaRepository) {
             this.productoRepository = productoRepository;
             this.categoriaRepository = categoriaRepository;
+            this.detalleVentaRepository = detalleVentaRepository;
         }
 
         @Override
@@ -85,6 +87,11 @@ public class ProductoServiceImpl implements ProductoService {
         public void delete(Long aLong) {
             Producto producto = productoRepository.findById(aLong)
                     .orElseThrow(() -> new RecursosNoEncontradosException("Producto no encontrado con id: " + aLong));
+            if (detalleVentaRepository.existsByProductoId(aLong)) {
+                throw new ReglaNegocioException(
+                        "No se puede eliminar el producto porque tiene detalles de venta asociados"
+                );
+            }
             productoRepository.delete(producto);
         }
 

@@ -1,8 +1,5 @@
 package pe.edu.upeu.PharmaBackckend.service.impl;
 
-import org.apache.coyote.BadRequestException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pe.edu.upeu.PharmaBackckend.dto.CategoriaRequestDTO;
@@ -11,18 +8,19 @@ import pe.edu.upeu.PharmaBackckend.entity.Categoria;
 import pe.edu.upeu.PharmaBackckend.exception.RecursosNoEncontradosException;
 import pe.edu.upeu.PharmaBackckend.exception.ReglaNegocioException;
 import pe.edu.upeu.PharmaBackckend.repository.CategoriaRepository;
+import pe.edu.upeu.PharmaBackckend.repository.ProductoRepository;
 import pe.edu.upeu.PharmaBackckend.service.service.CategoriaService;
-
-import java.util.Optional;
 
 @Service
 public class CategoriaServiceImpl implements CategoriaService {
-    private  static final Logger LOG = LoggerFactory.getLogger(CategoriaServiceImpl.class);
-
     private final CategoriaRepository categoriaRepository;
+    private final ProductoRepository productoRepository;
 
-    public CategoriaServiceImpl(CategoriaRepository categoriaRepository) {
+    public CategoriaServiceImpl(
+            CategoriaRepository categoriaRepository,
+            ProductoRepository productoRepository) {
         this.categoriaRepository = categoriaRepository;
+        this.productoRepository = productoRepository;
     }
 
     @Override
@@ -76,6 +74,11 @@ public class CategoriaServiceImpl implements CategoriaService {
         new RecursosNoEncontradosException(
                 "Categoria no encontrado con id" + aLong)
         );
+        if (productoRepository.existsByCategoriaId(aLong)) {
+            throw new ReglaNegocioException(
+                    "No se puede eliminar la categoria porque tiene productos asociados"
+            );
+        }
         categoriaRepository.delete(categoria);
 
     }
