@@ -11,8 +11,10 @@ import pe.edu.upeu.PharmaBackckend.repository.*;
 import pe.edu.upeu.PharmaBackckend.service.service.UsuarioService;
 
 import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 @Service
 public class UsuarioServiceImpl implements UsuarioService {
@@ -76,5 +78,56 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Transactional(readOnly = true)
     public List<RolResponseDTO> listarRoles() {
         return rolRepository.findAll().stream().map(mapper::toRolResponse).toList();
+    }
+
+    @Override
+    @Transactional
+    public UsuarioResponseDTO asignarRoles(Long id, AsignarRolesRequestDTO request, String usernameAdmin) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado con id: " + id));
+
+        if (request == null || request.getRolIds() == null || request.getRolIds().isEmpty()) {
+            throw new ReglaNegocioException("Debe asignar al menos un rol");
+        }
+
+        Set<Rol> rolesEncontrados = new HashSet<>();
+        for (Long rolId : request.getRolIds()) {
+            Rol rol = rolRepository.findById(rolId)
+                    .orElseThrow(() -> new RecursoNoEncontradoException("Rol no encontrado con id: " + rolId));
+            rolesEncontrados.add(rol);
+        }
+
+        boolean tieneRolAdmin = rolesEncontrados.stream()
+                .anyMatch(r -> Long.valueOf(1L).equals(r.getId()) || "ADMIN".equalsIgnoreCase(r.getNombre()));
+
+        if (usernameAdmin != null && usuario.getUsername() != null
+                && usuario.getUsername().equalsIgnoreCase(usernameAdmin) && !tieneRolAdmin) {
+            throw new ReglaNegocioException("Un administrador no puede quitarse a sí mismo el rol ADMIN");
+        }
+
+        usuario.setRoles(new HashSet<>(rolesEncontrados));
+        Usuario usuarioActualizado = usuarioRepository.save(usuario);
+        return mapper.toResponse(usuarioActualizado);
+    }
+
+    @Override
+    @Transactional
+    public UsuarioResponseDTO cambiarEstado(Long id, EstadoUsuarioRequestDTO request, String usernameAdmin) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado con id: " + id));
+
+        if (request == null || request.getEstado() == null) {
+            throw new ReglaNegocioException("El estado es obligatorio");
+        }
+
+        if (usernameAdmin != null && usuario.getUsername() != null
+                && usuario.getUsername().equalsIgnoreCase(usernameAdmin)
+                && Boolean.FALSE.equals(request.getEstado())) {
+            throw new ReglaNegocioException("Un administrador no puede desactivarse a sí mismo");
+        }
+
+        usuario.setEstado(request.getEstado());
+        Usuario usuarioActualizado = usuarioRepository.save(usuario);
+        return mapper.toResponse(usuarioActualizado);
     }
 }

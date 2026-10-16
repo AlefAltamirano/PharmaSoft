@@ -43,9 +43,9 @@ public class GlobalExceptionHandler {
      * Recurso no encontrado
      * HTTP 404
      */
-    @ExceptionHandler(RecursosNoEncontradosException.class)
+    @ExceptionHandler({RecursosNoEncontradosException.class, RecursoNoEncontradoException.class})
     public ResponseEntity<ErrorResponseDTO> handleNotFound(
-            RecursosNoEncontradosException ex,
+            RuntimeException ex,
             HttpServletRequest request) {
 
         ErrorResponseDTO error = new ErrorResponseDTO(

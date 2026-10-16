@@ -29,4 +29,14 @@ public class AuthController {
         }
         return ResponseEntity.ok(authService.usuarioActual(authentication.getName()));
     }
+
+    @PutMapping("/password")
+    public ResponseEntity<Void> cambiarPassword(Authentication authentication,
+                                                @Valid @RequestBody CambioPasswordRequestDTO request) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new BadCredentialsException("No hay sesión autenticada");
+        }
+        authService.cambiarPassword(authentication.getName(), request);
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -1,12 +1,16 @@
 package pe.edu.upeu.PharmaBackckend.service.impl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pe.edu.upeu.PharmaBackckend.dto.auth.*;
 import pe.edu.upeu.PharmaBackckend.entity.Usuario;
 import pe.edu.upeu.PharmaBackckend.exception.RecursosNoEncontradosException;
+import pe.edu.upeu.PharmaBackckend.exception.ReglaNegocioException;
 import pe.edu.upeu.PharmaBackckend.mapper.UsuarioMapper;
 import pe.edu.upeu.PharmaBackckend.repository.UsuarioRepository;
 import pe.edu.upeu.PharmaBackckend.security.JwtService;
@@ -16,18 +20,23 @@ import java.util.Locale;
 
 @Service
 public class AuthServiceImpl implements AuthService {
+    private static final Logger log = LoggerFactory.getLogger(AuthServiceImpl.class);
+
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final UsuarioRepository usuarioRepository;
     private final UsuarioMapper usuarioMapper;
+    private final PasswordEncoder passwordEncoder;
 
     public AuthServiceImpl(AuthenticationManager authenticationManager, JwtService jwtService,
                            UsuarioRepository usuarioRepository,
-                           UsuarioMapper usuarioMapper) {
+                           UsuarioMapper usuarioMapper,
+                           PasswordEncoder passwordEncoder) {
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.usuarioRepository = usuarioRepository;
         this.usuarioMapper = usuarioMapper;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -60,5 +69,25 @@ public class AuthServiceImpl implements AuthService {
         Usuario usuario = usuarioRepository.findByUsernameIgnoreCase(username)
                 .orElseThrow(() -> new RecursosNoEncontradosException("Usuario no encontrado"));
         return usuarioMapper.toResponse(usuario);
+    }
+
+    @Override
+    @Transactional
+    public void cambiarPassword(String username, CambioPasswordRequestDTO request) {
+        Usuario usuario = usuarioRepository.findByUsernameIgnoreCase(username)
+                .orElseThrow(() -> new RecursosNoEncontradosException("Usuario no encontrado"));
+
+        if (!passwordEncoder.matches(request.getPasswordActual(), usuario.getPassword())) {
+            throw new ReglaNegocioException("La contraseña actual no es correcta");
+        }
+
+        if (request.getPasswordActual().equals(request.getPasswordNueva())) {
+            throw new ReglaNegocioException("La nueva contraseña debe ser distinta de la actual");
+        }
+
+        usuario.setPassword(passwordEncoder.encode(request.getPasswordNueva()));
+        usuarioRepository.save(usuario);
+
+        log.info("Contraseña actualizada para el usuario: {}", username);
     }
 }

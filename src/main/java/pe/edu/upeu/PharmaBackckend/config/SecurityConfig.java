@@ -37,6 +37,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/login", "/api/health", "/swagger-ui/**",
                                 "/swagger-ui.html", "/v3/api-docs/**", "/error").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/auth/me").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/auth/password").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/v1/productos/**", "/api/v1/categorias/**")
                             .hasAuthority("CATALOGO_LEER")
                         .requestMatchers(HttpMethod.POST, "/api/v1/productos/**", "/api/v1/categorias/**")
