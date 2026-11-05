@@ -4,6 +4,7 @@ import org.apache.coyote.BadRequestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.*;
 import org.springframework.transaction.annotation.Transactional;
 import pe.edu.upeu.PharmaBackckend.dto.CategoriaRequestDTO;
 import pe.edu.upeu.PharmaBackckend.dto.CategoriaResponseDTO;
@@ -27,6 +28,7 @@ public class CategoriaServiceImpl implements CategoriaService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = "categorias", allEntries = true)
     public CategoriaResponseDTO create(CategoriaRequestDTO t) {
         String nommbre = t.getNombre().trim();
         if(categoriaRepository.existsByNombreIgnoreCase(nommbre)){
@@ -44,6 +46,7 @@ public class CategoriaServiceImpl implements CategoriaService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = {"categorias", "productos"}, allEntries = true)
     public CategoriaResponseDTO update(Long aLong, CategoriaRequestDTO t) {
         String nombre = t.getNombre().trim();
         if (categoriaRepository.existsByNombreIgnoreCaseAndIdNot(nombre, aLong)) {
@@ -64,6 +67,7 @@ public class CategoriaServiceImpl implements CategoriaService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = "categorias", key = "'id-' + #p0")
     public CategoriaResponseDTO read(Long aLong) {
         Categoria categoria = categoriaRepository.findById(aLong)
                 .orElseThrow(()->
@@ -75,6 +79,7 @@ public class CategoriaServiceImpl implements CategoriaService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = "categorias", allEntries = true)
     public void delete(Long aLong) {
         Categoria categoria = categoriaRepository.findById(aLong).orElseThrow(()->
         new RecursosNoEncontradosException(
@@ -86,7 +91,9 @@ public class CategoriaServiceImpl implements CategoriaService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = "categorias", key = "'todas'")
     public Iterable<CategoriaResponseDTO> readAll() {
+        LOG.info("Inicio listar categorias");
         return categoriaRepository.findAll()
                 .stream()
                 .map(this::convertirCategoria)
