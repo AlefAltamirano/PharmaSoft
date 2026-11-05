@@ -21,6 +21,7 @@ import pe.edu.upeu.PharmaBackckend.service.service.VentaService;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Comparator;
 @Service
 public class VentaServiceImpl implements VentaService {
     private final VentaRepository ventaRepository;
@@ -54,8 +55,9 @@ public class VentaServiceImpl implements VentaService {
 
         BigDecimal total = BigDecimal.ZERO;
 
-        for (DetalleVentaRequestDTO item: request.getDetalles()) {
-            Producto producto = productoRepository.findById(item.getProductoId()).orElseThrow(() ->
+        for (DetalleVentaRequestDTO item: request.getDetalles().stream()
+                .sorted(Comparator.comparing(DetalleVentaRequestDTO::getProductoId)).toList()) {
+            Producto producto = productoRepository.buscarParaActualizar(item.getProductoId()).orElseThrow(() ->
                     new RecursosNoEncontradosException("Producto no encontrado con id: "+ item.getProductoId()));
 
             if (!Boolean.TRUE.equals(producto.getEstado())) {
@@ -98,6 +100,25 @@ public class VentaServiceImpl implements VentaService {
         Venta venta = ventaRepository.findById(id).orElseThrow(() ->
                 new RecursosNoEncontradosException("Venta no encontrada con id: "+ id));
         return convertirResponse(venta);
+    }
+
+    @Override
+    @Transactional
+    public VentaResponseDTO anular(Long id) {
+        Venta venta = ventaRepository.buscarParaActualizar(id)
+                .orElseThrow(() -> new RecursosNoEncontradosException("Venta no encontrada con id: " + id));
+        if (venta.getEstado() != EstadoVenta.REGISTRADA) {
+            throw new ReglaNegocioException("La venta ya fue anulada");
+        }
+        venta.getDetalles().stream()
+                .sorted(Comparator.comparing(detalle -> detalle.getProducto().getId()))
+                .forEach(detalle -> {
+                    Producto producto = productoRepository.buscarParaActualizar(detalle.getProducto().getId())
+                            .orElseThrow(() -> new RecursosNoEncontradosException("Producto de la venta no encontrado"));
+                    producto.setStock(Math.addExact(producto.getStock(), detalle.getCantidad()));
+                });
+        venta.setEstado(EstadoVenta.ANULADA);
+        return convertirResponse(ventaRepository.save(venta));
     }
 
     @Override

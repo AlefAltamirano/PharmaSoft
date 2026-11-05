@@ -8,5 +8,6 @@ import java.util.List;
 public interface VentaService {
     VentaResponseDTO registrar(VentaRequestDTO request);
     VentaResponseDTO buscar(Long id);
+    VentaResponseDTO anular(Long id);
     List<VentaResponseDTO> listar();
 }

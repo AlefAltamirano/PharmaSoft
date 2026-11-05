@@ -1,11 +1,20 @@
 package pe.edu.upeu.PharmaBackckend.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import jakarta.persistence.LockModeType;
 import pe.edu.upeu.PharmaBackckend.entity.Producto;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ProductoRepository extends JpaRepository<Producto, Long> {
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select p from Producto p where p.id = :id")
+    Optional<Producto> buscarParaActualizar(Long id);
+
+    boolean existsByNombreIgnoreCaseAndIdNot(String nombre, Long id);
     // Revisa si existe un producto con el mismo nombre (para evitar duplicados)
     boolean existsByNombreIgnoreCase(String nombre);
 

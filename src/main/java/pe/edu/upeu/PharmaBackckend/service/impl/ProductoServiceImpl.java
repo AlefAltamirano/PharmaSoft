@@ -55,13 +55,17 @@ public class ProductoServiceImpl implements ProductoService {
         @Override
         @Transactional
         public ProductoResponseDTO update(Long aLong, ProductoRequestDTO t) {
+            String nombre = t.getNombre().trim();
+            if (productoRepository.existsByNombreIgnoreCaseAndIdNot(nombre, aLong)) {
+                throw new ReglaNegocioException("El producto ya existe: " + nombre);
+            }
             Producto producto = productoRepository.findById(aLong)
                     .orElseThrow(() -> new RecursosNoEncontradosException("Producto no encontrado con id: " + aLong));
 
             Categoria categoria = categoriaRepository.findById(t.getCategoriaId())
                     .orElseThrow(() -> new RecursosNoEncontradosException("Categoria no encontrada con id: " + t.getCategoriaId()));
 
-            producto.setNombre(t.getNombre());
+            producto.setNombre(nombre);
             producto.setDescripcion(t.getDescripcion());
             producto.setPrecio(t.getPrecio());
             producto.setStock(t.getStock());
@@ -85,7 +89,8 @@ public class ProductoServiceImpl implements ProductoService {
         public void delete(Long aLong) {
             Producto producto = productoRepository.findById(aLong)
                     .orElseThrow(() -> new RecursosNoEncontradosException("Producto no encontrado con id: " + aLong));
-            productoRepository.delete(producto);
+            producto.setEstado(false);
+            productoRepository.save(producto);
         }
 
         @Override

@@ -9,10 +9,14 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @OpenAPIDefinition(
-        info = @Info(title = "PharmaBackend API", version = "v1"),
+        info = @Info(title = "PharmaBackend API", version = "1.0"),
         security = @SecurityRequirement(name = "bearerAuth")
 )
-@SecurityScheme(name = "bearerAuth", type = SecuritySchemeType.HTTP,
-        bearerFormat = "JWT", scheme = "bearer")
+@SecurityScheme(
+        name = "bearerAuth",
+        type = SecuritySchemeType.HTTP,
+        scheme = "bearer",
+        bearerFormat = "JWT"
+)
 public class OpenApiConfig {
 }

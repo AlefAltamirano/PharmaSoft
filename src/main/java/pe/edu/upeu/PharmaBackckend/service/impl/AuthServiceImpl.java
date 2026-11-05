@@ -14,6 +14,7 @@ import pe.edu.upeu.PharmaBackckend.exception.ReglaNegocioException;
 import pe.edu.upeu.PharmaBackckend.mapper.UsuarioMapper;
 import pe.edu.upeu.PharmaBackckend.repository.UsuarioRepository;
 import pe.edu.upeu.PharmaBackckend.security.JwtService;
+import pe.edu.upeu.PharmaBackckend.security.PermisosPorRol;
 import pe.edu.upeu.PharmaBackckend.service.service.AuthService;
 
 import java.util.Locale;
@@ -44,7 +45,7 @@ public class AuthServiceImpl implements AuthService {
     public LoginResponseDTO login(LoginRequestDTO request) {
         var authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getUsername().trim(), request.getPassword()));
-        var usuario = usuarioRepository.findByUsernameIgnoreCase(authentication.getName())
+        var usuario = usuarioRepository.findByUsernameForAuthentication(authentication.getName())
                 .orElseThrow(() -> new RecursosNoEncontradosException("Usuario no encontrado"));
         var token = jwtService.generateToken(authentication.getName(), authentication.getAuthorities());
         var roles = usuario.getRoles().stream()
@@ -65,10 +66,24 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional(readOnly = true)
-    public UsuarioResponseDTO usuarioActual(String username) {
-        Usuario usuario = usuarioRepository.findByUsernameIgnoreCase(username)
+    public UsuarioPerfilResponseDTO usuarioActual(String username) {
+        String normalizedUsername = username == null ? "" : username.trim();
+        Usuario usuario = usuarioRepository.findByUsernameForAuthentication(normalizedUsername)
                 .orElseThrow(() -> new RecursosNoEncontradosException("Usuario no encontrado"));
-        return usuarioMapper.toResponse(usuario);
+        var roles = usuario.getRoles().stream()
+                .map(rol -> rol.getNombre().toUpperCase(Locale.ROOT))
+                .distinct()
+                .sorted()
+                .toList();
+        var permisos = PermisosPorRol.authorities(usuario.getRoles()).stream()
+                .map(authority -> authority.getAuthority())
+                .filter(authority -> !authority.startsWith("ROLE_"))
+                .distinct()
+                .sorted()
+                .toList();
+        var empleado = usuario.getEmpleado();
+        var nombreCompleto = (empleado.getNombres() + " " + empleado.getApellidos()).trim();
+        return new UsuarioPerfilResponseDTO(usuario.getUsername(), nombreCompleto, roles, permisos);
     }
 
     @Override

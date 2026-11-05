@@ -1,5 +1,5 @@
 server:
-  port: 8081
+  port: 8080
 spring:
   datasource:
     url: jdbc:oracle:thin:@//localhost:1522/FREEPDB1
@@ -28,4 +28,4 @@ springdoc:
 app:
   jwt:
     secret: VGhpc0lzQVN1ZmZpY2llbnRseUxvbmdTZWNyZXRGb3JEZXZlbG9wbWVudE9ubHlLZXk=
-    expiracion-minutos: 60
+    expiracion-minutos: ${JWT_EXPIRACION_MINUTOS:60}

@@ -17,7 +17,8 @@ public class UsuarioDetailsService implements UserDetailsService {
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Usuario usuario = usuarioRepository.findByUsernameIgnoreCase(username)
+        String normalizedUsername = username == null ? "" : username.trim();
+        Usuario usuario = usuarioRepository.findByUsernameForAuthentication(normalizedUsername)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
         boolean activo = Boolean.TRUE.equals(usuario.getEstado())
                 && usuario.getEmpleado() != null

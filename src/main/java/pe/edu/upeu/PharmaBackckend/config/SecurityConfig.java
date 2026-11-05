@@ -34,8 +34,10 @@ public class SecurityConfig {
                         .accessDeniedHandler(new RestAccessDeniedHandler()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/api/v1/auth/login", "/api/health", "/swagger-ui/**",
-                                "/swagger-ui.html", "/v3/api-docs/**", "/error").permitAll()
+                        .requestMatchers("/api/v1/auth/login", "/api/health",
+                                "/swagger-ui.html", "/swagger-ui/**",
+                                "/v3/api-docs", "/v3/api-docs/**",
+                                "/webjars/**", "/error").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/auth/me").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/api/v1/auth/password").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/v1/productos/**", "/api/v1/categorias/**")
@@ -52,6 +54,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/clientes/**").hasAuthority("CLIENTES_ESCRIBIR")
                         .requestMatchers(HttpMethod.POST, "/api/v1/ventas/**").hasAuthority("VENTAS_REGISTRAR")
                         .requestMatchers(HttpMethod.GET, "/api/v1/ventas/**").hasAuthority("VENTAS_LEER")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/ventas/*/anular").hasAuthority("VENTAS_REGISTRAR")
                         .requestMatchers("/api/v1/usuarios/**", "/api/v1/empleados/**", "/api/v1/roles/**")
                             .hasAuthority("USUARIOS_ADMINISTRAR")
                         .anyRequest().authenticated())
@@ -60,7 +63,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    PasswordEncoder passwordEncoder() {
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 

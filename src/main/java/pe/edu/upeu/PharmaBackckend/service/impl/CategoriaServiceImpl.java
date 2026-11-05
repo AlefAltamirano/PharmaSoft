@@ -45,11 +45,15 @@ public class CategoriaServiceImpl implements CategoriaService {
     @Override
     @Transactional
     public CategoriaResponseDTO update(Long aLong, CategoriaRequestDTO t) {
+        String nombre = t.getNombre().trim();
+        if (categoriaRepository.existsByNombreIgnoreCaseAndIdNot(nombre, aLong)) {
+            throw new ReglaNegocioException("El nombre de la categoría ya existe: " + nombre);
+        }
         Categoria categoria = categoriaRepository.findById(aLong).orElseThrow(()->
         new RecursosNoEncontradosException(
                 "Categoria no encontrado con id" + aLong)
         );
-        categoria.setNombre(t.getNombre());
+        categoria.setNombre(nombre);
         categoria.setDescripcion(t.getDescripcion());
         categoria.setEstado(t.getEstado());
 

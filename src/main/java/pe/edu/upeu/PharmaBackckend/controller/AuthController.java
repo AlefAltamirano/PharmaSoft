@@ -23,7 +23,7 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<UsuarioResponseDTO> me(Authentication authentication) {
+    public ResponseEntity<UsuarioPerfilResponseDTO> me(Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new BadCredentialsException("No hay sesión autenticada");
         }
