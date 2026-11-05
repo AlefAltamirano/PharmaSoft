@@ -9,7 +9,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CategoriaDTO {
+public class CategoriaDTO implements java.io.Serializable {
+ private static final long serialVersionUID = 1L;
     private  Long id;
     private String nombre;
     private String descripcion;

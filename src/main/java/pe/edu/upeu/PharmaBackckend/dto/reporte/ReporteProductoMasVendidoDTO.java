@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 public class ReporteProductoMasVendidoDTO {
     private Long productoId;
     private String productoNombre;
+    private String categoriaNombre;
     private Long cantidadVendida;
     private BigDecimal montoTotal;
 }

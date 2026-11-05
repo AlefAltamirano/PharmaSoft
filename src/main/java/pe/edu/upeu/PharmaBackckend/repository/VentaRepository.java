@@ -40,6 +40,7 @@ public interface VentaRepository extends JpaRepository<Venta, Long> {
             select new pe.edu.upeu.PharmaBackckend.dto.reporte.ReporteProductoMasVendidoDTO(
                 p.id,
                 p.nombre,
+                p.categoria.nombre,
                 sum(d.cantidad),
                 sum(d.subtotal)
             )
@@ -49,7 +50,7 @@ public interface VentaRepository extends JpaRepository<Venta, Long> {
             where v.estado = pe.edu.upeu.PharmaBackckend.enums.EstadoVenta.REGISTRADA
               and (:desde is null or v.fecha >= :desde)
               and (:hasta is null or v.fecha < :hasta)
-            group by p.id, p.nombre
+            group by p.id, p.nombre, p.categoria.nombre
             order by sum(d.cantidad) desc, sum(d.subtotal) desc
             """)
     List<ReporteProductoMasVendidoDTO> obtenerProductosMasVendidos(

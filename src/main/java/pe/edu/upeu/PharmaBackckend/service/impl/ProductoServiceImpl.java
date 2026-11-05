@@ -3,6 +3,7 @@ package pe.edu.upeu.PharmaBackckend.service.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.*;
 import org.springframework.transaction.annotation.Transactional;
 import pe.edu.upeu.PharmaBackckend.dto.CategoriaDTO;
 import pe.edu.upeu.PharmaBackckend.dto.ProductoRequestDTO;
@@ -31,6 +32,7 @@ public class ProductoServiceImpl implements ProductoService {
 
         @Override
         @Transactional
+    @CacheEvict(cacheNames = "productos", allEntries = true)
         public ProductoResponseDTO create(ProductoRequestDTO t) {
             String nombre = t.getNombre().trim();
             if (productoRepository.existsByNombreIgnoreCase(nombre)) {
@@ -54,6 +56,7 @@ public class ProductoServiceImpl implements ProductoService {
 
         @Override
         @Transactional
+    @CacheEvict(cacheNames = "productos", allEntries = true)
         public ProductoResponseDTO update(Long aLong, ProductoRequestDTO t) {
             String nombre = t.getNombre().trim();
             if (productoRepository.existsByNombreIgnoreCaseAndIdNot(nombre, aLong)) {
@@ -78,6 +81,7 @@ public class ProductoServiceImpl implements ProductoService {
 
         @Override
         @Transactional(readOnly = true)
+    @Cacheable(cacheNames = "productos", key = "'id-' + #p0")
         public ProductoResponseDTO read(Long aLong) {
             Producto producto = productoRepository.findById(aLong)
                     .orElseThrow(() -> new RecursosNoEncontradosException("Producto no encontrado con id: " + aLong));
@@ -86,6 +90,7 @@ public class ProductoServiceImpl implements ProductoService {
 
         @Override
         @Transactional
+    @CacheEvict(cacheNames = "productos", allEntries = true)
         public void delete(Long aLong) {
             Producto producto = productoRepository.findById(aLong)
                     .orElseThrow(() -> new RecursosNoEncontradosException("Producto no encontrado con id: " + aLong));
@@ -95,6 +100,7 @@ public class ProductoServiceImpl implements ProductoService {
 
         @Override
         @Transactional(readOnly = true)
+    @Cacheable(cacheNames = "productos", key = "'todas'")
         public Iterable<ProductoResponseDTO> readAll() {
             return productoRepository.findAll()
                     .stream()
@@ -112,6 +118,20 @@ public class ProductoServiceImpl implements ProductoService {
                     .stream()
                     .map(this::convertirProducto)
                     .toList();
+        }
+
+        @Override
+        @Transactional(readOnly = true)
+        @Cacheable(cacheNames = "productos", key = "'pagina-' + #p0 + '-' + #p1 + '-' + #p2 + '-' + #p3 + '-' + #p4")
+        public pe.edu.upeu.PharmaBackckend.dto.PaginaResponseDTO<ProductoResponseDTO> listar(int pagina, int tamanio, String ordenarPor, String direccion, Long categoriaId) {
+            if (pagina < 0 || tamanio < 1 || tamanio > 1000 || !java.util.Set.of("id", "nombre", "precio", "stock").contains(ordenarPor)
+                || !java.util.Set.of("asc", "desc").contains(direccion)) {
+                throw new ReglaNegocioException("Parámetros de paginación u orden no válidos");
+            }
+            var sort = org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.fromString(direccion), ordenarPor).and(org.springframework.data.domain.Sort.by("id"));
+            var pageable = org.springframework.data.domain.PageRequest.of(pagina, tamanio, sort);
+            var resultado = categoriaId == null ? productoRepository.findAll(pageable) : productoRepository.findByCategoriaId(categoriaId, pageable);
+            return new pe.edu.upeu.PharmaBackckend.dto.PaginaResponseDTO<>(resultado.getContent().stream().map(this::convertirProducto).toList(), pagina, tamanio, resultado.getTotalElements(), resultado.getTotalPages(), resultado.isLast());
         }
 
         private ProductoResponseDTO convertirProducto(Producto producto) {

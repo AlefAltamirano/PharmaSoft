@@ -52,6 +52,7 @@ public class GlobalExceptionHandler {
             HttpStatus status, String message, HttpServletRequest request) {
         ErrorResponseDTO error = new ErrorResponseDTO(LocalDateTime.now(), status.value(),
                 status.getReasonPhrase(), message, request.getRequestURI(), null);
+        error.setRequestId(org.slf4j.MDC.get("requestId"));
         return ResponseEntity.status(status).body(error);
     }
 
@@ -73,6 +74,7 @@ public class GlobalExceptionHandler {
                 null
         );
 
+        error.setRequestId(org.slf4j.MDC.get("requestId"));
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(error);
@@ -97,6 +99,7 @@ public class GlobalExceptionHandler {
                 null
         );
 
+        error.setRequestId(org.slf4j.MDC.get("requestId"));
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
                 .body(error);
@@ -133,6 +136,7 @@ public class GlobalExceptionHandler {
                 validationErrors
         );
 
+        error.setRequestId(org.slf4j.MDC.get("requestId"));
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(error);

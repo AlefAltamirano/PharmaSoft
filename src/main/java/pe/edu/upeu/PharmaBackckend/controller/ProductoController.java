@@ -21,8 +21,11 @@ public class ProductoController {
     }
 
     @GetMapping
-    public ResponseEntity<Iterable<ProductoResponseDTO>> findAll() {
-        return ResponseEntity.ok(productoService.readAll());
+    public ResponseEntity<pe.edu.upeu.PharmaBackckend.dto.PaginaResponseDTO<ProductoResponseDTO>> findAll(
+      @RequestParam(defaultValue="0") int pagina, @RequestParam(defaultValue="10") int tamanio,
+      @RequestParam(defaultValue="nombre") String ordenarPor, @RequestParam(defaultValue="asc") String direccion,
+      @RequestParam(required=false) Long categoriaId) {
+      return ResponseEntity.ok(productoService.listar(pagina,tamanio,ordenarPor,direccion,categoriaId));
     }
 
     @GetMapping("/{id}")

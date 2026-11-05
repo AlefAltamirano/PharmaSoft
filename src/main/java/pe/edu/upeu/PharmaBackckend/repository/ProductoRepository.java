@@ -15,6 +15,7 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
     Optional<Producto> buscarParaActualizar(Long id);
 
     boolean existsByNombreIgnoreCaseAndIdNot(String nombre, Long id);
+    org.springframework.data.domain.Page<Producto> findByCategoriaId(Long categoriaId, org.springframework.data.domain.Pageable pageable);
     // Revisa si existe un producto con el mismo nombre (para evitar duplicados)
     boolean existsByNombreIgnoreCase(String nombre);
 
