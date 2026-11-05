@@ -15,6 +15,7 @@ public final class RespuestaErrorSeguridad {
             throws IOException {
         ErrorResponseDTO error = new ErrorResponseDTO(LocalDateTime.now(), status,
                 status == 401 ? "Unauthorized" : "Forbidden", message, null, null);
+        error.setRequestId(org.slf4j.MDC.get("requestId"));
         response.setStatus(status);
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");

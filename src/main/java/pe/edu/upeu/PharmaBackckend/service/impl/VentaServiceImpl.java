@@ -91,6 +91,8 @@ public class VentaServiceImpl implements VentaService {
         venta.setTotal(total);
 
         Venta guardada =ventaRepository.save(venta);
+        org.slf4j.LoggerFactory.getLogger(VentaServiceImpl.class)
+                .info("Venta registrada id={} items={}", guardada.getId(), guardada.getDetalles().size());
 
         return convertirResponse(guardada);
     }
