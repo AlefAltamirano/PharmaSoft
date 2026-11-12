@@ -17,6 +17,7 @@ import java.util.List;
 @Service
 public class ClienteServiceImpl
         implements ClienteService {
+    private final pe.edu.upeu.PharmaBackckend.audit.AuditoriaEventos auditoria;
 
     private static final Logger log =
             LoggerFactory.getLogger(ClienteServiceImpl.class);
@@ -24,7 +25,8 @@ public class ClienteServiceImpl
     private final ClienteRepository clienteRepository;
 
     public ClienteServiceImpl(
-            ClienteRepository clienteRepository) {
+            ClienteRepository clienteRepository, pe.edu.upeu.PharmaBackckend.audit.AuditoriaEventos auditoria) {
+        this.auditoria=auditoria;
         this.clienteRepository = clienteRepository;
     }
 
@@ -83,6 +85,7 @@ public class ClienteServiceImpl
                 guardado.getId()
         );
 
+        auditoria.publicar("CLIENTE_REGISTRADO","Cliente",guardado.getId(),"Cliente registrado");
         return convertirResponse(guardado);
     }
 
@@ -213,7 +216,7 @@ public class ClienteServiceImpl
     private ClienteResponseDTO convertirResponse(
             Cliente cliente) {
 
-        return new ClienteResponseDTO(
+        var dto = new ClienteResponseDTO(
                 cliente.getId(),
                 cliente.getDni(),
                 cliente.getNombres(),
@@ -225,6 +228,9 @@ public class ClienteServiceImpl
                 cliente.getFechaCreacion(),
                 cliente.getFechaModificacion()
         );
+        dto.setCreadoPor(cliente.getCreadoPor());
+        dto.setModificadoPor(cliente.getModificadoPor());
+        return dto;
     }
 
     private String normalizar(String valor) {

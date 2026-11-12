@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Cliente {
+public class Cliente extends EntidadAuditada {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

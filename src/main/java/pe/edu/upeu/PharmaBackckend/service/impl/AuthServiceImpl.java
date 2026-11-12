@@ -21,6 +21,7 @@ import java.util.Locale;
 
 @Service
 public class AuthServiceImpl implements AuthService {
+    private final pe.edu.upeu.PharmaBackckend.audit.AuditoriaEventos auditoria;
     private static final Logger log = LoggerFactory.getLogger(AuthServiceImpl.class);
 
     private final AuthenticationManager authenticationManager;
@@ -32,7 +33,8 @@ public class AuthServiceImpl implements AuthService {
     public AuthServiceImpl(AuthenticationManager authenticationManager, JwtService jwtService,
                            UsuarioRepository usuarioRepository,
                            UsuarioMapper usuarioMapper,
-                           PasswordEncoder passwordEncoder) {
+                           PasswordEncoder passwordEncoder, pe.edu.upeu.PharmaBackckend.audit.AuditoriaEventos auditoria) {
+        this.auditoria=auditoria;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.usuarioRepository = usuarioRepository;
@@ -43,8 +45,14 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional(readOnly = true)
     public LoginResponseDTO login(LoginRequestDTO request) {
-        var authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername().trim(), request.getPassword()));
+        org.springframework.security.core.Authentication authentication;
+        try {
+            authentication=authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUsername().trim(),request.getPassword()));
+        } catch (org.springframework.security.core.AuthenticationException ex) {
+            auditoria.login(request.getUsername().trim(),false);
+            throw ex;
+        }
+        auditoria.login(authentication.getName(),true);
         var usuario = usuarioRepository.findByUsernameForAuthentication(authentication.getName())
                 .orElseThrow(() -> new RecursosNoEncontradosException("Usuario no encontrado"));
         var token = jwtService.generateToken(authentication.getName(), authentication.getAuthorities());

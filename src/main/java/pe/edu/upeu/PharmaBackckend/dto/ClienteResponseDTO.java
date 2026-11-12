@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Getter
 @Setter
-public class ClienteResponseDTO {
+public class ClienteResponseDTO extends DatosAuditoriaDTO {
     private Long id;
     private String dni;
     private String nombres;

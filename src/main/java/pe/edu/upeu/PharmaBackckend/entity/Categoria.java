@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Categoria {
+public class Categoria extends EntidadAuditada {
     @Id
     @GeneratedValue
     private  Long id;

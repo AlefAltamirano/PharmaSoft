@@ -101,7 +101,7 @@ public class CategoriaServiceImpl implements CategoriaService {
     }
 
     private CategoriaResponseDTO convertirCategoria(Categoria categoria){
-        return new CategoriaResponseDTO(
+        var dto = new CategoriaResponseDTO(
                 categoria.getId(),
                 categoria.getNombre(),
                 categoria.getDescripcion(),
@@ -109,5 +109,8 @@ public class CategoriaServiceImpl implements CategoriaService {
                 categoria.getFechaCreacion(),
                 categoria.getFechaModificacion()
         );
+        dto.setCreadoPor(categoria.getCreadoPor());
+        dto.setModificadoPor(categoria.getModificadoPor());
+        return dto;
     }
 }

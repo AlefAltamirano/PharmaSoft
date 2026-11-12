@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Comparator;
 @Service
 public class VentaServiceImpl implements VentaService {
+    private final pe.edu.upeu.PharmaBackckend.audit.AuditoriaEventos auditoria;
     private final VentaRepository ventaRepository;
     private final ClienteRepository clienteRepository;
     private final ProductoRepository productoRepository;
@@ -32,7 +33,8 @@ public class VentaServiceImpl implements VentaService {
     public VentaServiceImpl(
             VentaRepository ventaRepository,
             ClienteRepository clienteRepository,
-            ProductoRepository productoRepository) {
+            ProductoRepository productoRepository, pe.edu.upeu.PharmaBackckend.audit.AuditoriaEventos auditoria) {
+        this.auditoria=auditoria;
 
         this.ventaRepository = ventaRepository;
         this.clienteRepository = clienteRepository;
@@ -94,6 +96,7 @@ public class VentaServiceImpl implements VentaService {
         org.slf4j.LoggerFactory.getLogger(VentaServiceImpl.class)
                 .info("Venta registrada id={} items={}", guardada.getId(), guardada.getDetalles().size());
 
+        auditoria.publicar("VENTA_REGISTRADA","Venta",guardada.getId(),"Total="+guardada.getTotal()+"; líneas="+guardada.getDetalles().size());
         return convertirResponse(guardada);
     }
 
@@ -122,6 +125,7 @@ public class VentaServiceImpl implements VentaService {
                             .orElseThrow(() -> new RecursosNoEncontradosException("Producto de la venta no encontrado"));
                     producto.setStock(Math.addExact(producto.getStock(), detalle.getCantidad()));
                 });
+        auditoria.publicar("VENTA_ANULADA","Venta",venta.getId(),"Stock restituido");
         venta.setEstado(EstadoVenta.ANULADA);
         return convertirResponse(ventaRepository.save(venta));
     }
@@ -160,7 +164,7 @@ public class VentaServiceImpl implements VentaService {
 
         String clienteNombre = venta.getCliente().getNombres()+ " "+ venta.getCliente().getApellidos();
 
-        return new VentaResponseDTO(
+        var dto = new VentaResponseDTO(
                 venta.getId(),
                 venta.getFecha(),
                 venta.getCliente().getId(),
@@ -169,5 +173,7 @@ public class VentaServiceImpl implements VentaService {
                 venta.getTotal(),
                 detalles
         );
+        dto.setCreadoPor(venta.getCreadoPor());
+        return dto;
     }
 }

@@ -20,12 +20,14 @@ import java.util.List;
 
 @Service
 public class ProductoServiceImpl implements ProductoService {
+    private final pe.edu.upeu.PharmaBackckend.audit.AuditoriaEventos auditoria;
         private static final Logger LOG = LoggerFactory.getLogger(ProductoServiceImpl.class);
 
         private final ProductoRepository productoRepository;
         private final CategoriaRepository categoriaRepository;
 
-        public ProductoServiceImpl(ProductoRepository productoRepository, CategoriaRepository categoriaRepository) {
+        public ProductoServiceImpl(ProductoRepository productoRepository, CategoriaRepository categoriaRepository, pe.edu.upeu.PharmaBackckend.audit.AuditoriaEventos auditoria) {
+        this.auditoria=auditoria;
             this.productoRepository = productoRepository;
             this.categoriaRepository = categoriaRepository;
         }
@@ -68,6 +70,9 @@ public class ProductoServiceImpl implements ProductoService {
             Categoria categoria = categoriaRepository.findById(t.getCategoriaId())
                     .orElseThrow(() -> new RecursosNoEncontradosException("Categoria no encontrada con id: " + t.getCategoriaId()));
 
+            if (producto.getPrecio().compareTo(t.getPrecio())!=0) {
+                auditoria.publicar("PRECIO_MODIFICADO","Producto",producto.getId(),"Precio anterior="+producto.getPrecio()+"; nuevo="+t.getPrecio());
+            }
             producto.setNombre(nombre);
             producto.setDescripcion(t.getDescripcion());
             producto.setPrecio(t.getPrecio());
@@ -94,6 +99,7 @@ public class ProductoServiceImpl implements ProductoService {
         public void delete(Long aLong) {
             Producto producto = productoRepository.findById(aLong)
                     .orElseThrow(() -> new RecursosNoEncontradosException("Producto no encontrado con id: " + aLong));
+            auditoria.publicar("PRODUCTO_ELIMINADO","Producto",producto.getId(),"Baja lógica del producto");
             producto.setEstado(false);
             productoRepository.save(producto);
         }
@@ -146,7 +152,7 @@ public class ProductoServiceImpl implements ProductoService {
                 );
             }
 
-            return new ProductoResponseDTO(
+            var dto = new ProductoResponseDTO(
                     producto.getId(),
                     producto.getNombre(),
                     producto.getDescripcion(),
@@ -157,5 +163,8 @@ public class ProductoServiceImpl implements ProductoService {
                     producto.getFechaModificacion(),
                     categoriaDTO
             );
+        dto.setCreadoPor(producto.getCreadoPor());
+        dto.setModificadoPor(producto.getModificadoPor());
+        return dto;
         }
 }

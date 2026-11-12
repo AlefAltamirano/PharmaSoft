@@ -26,6 +26,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceImplTest {
+    @Mock pe.edu.upeu.PharmaBackckend.audit.AuditoriaEventos auditoria;
 
     @Mock
     private AuthenticationManager authenticationManager;

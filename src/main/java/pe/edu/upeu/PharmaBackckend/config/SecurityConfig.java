@@ -55,6 +55,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/ventas/**").hasAuthority("VENTAS_REGISTRAR")
                         .requestMatchers(HttpMethod.GET, "/api/v1/ventas/**").hasAuthority("VENTAS_LEER")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/ventas/*/anular").hasAuthority("VENTAS_REGISTRAR")
+                        .requestMatchers("/api/v1/auditoria/**").hasAuthority("USUARIOS_ADMINISTRAR")
                         .requestMatchers("/api/v1/usuarios/**", "/api/v1/empleados/**", "/api/v1/roles/**")
                             .hasAuthority("USUARIOS_ADMINISTRAR")
                         .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
