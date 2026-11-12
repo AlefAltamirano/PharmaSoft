@@ -39,7 +39,7 @@ public class CategoriaServiceImpl implements CategoriaService {
         categoria.setDescripcion(t.getDescripcion());
         categoria.setEstado(t.getEstado());
 
-        Categoria catCategoria = categoriaRepository.save(categoria);
+        Categoria catCategoria = categoriaRepository.saveAndFlush(categoria);
 
         return convertirCategoria(catCategoria);
     }
@@ -60,7 +60,7 @@ public class CategoriaServiceImpl implements CategoriaService {
         categoria.setDescripcion(t.getDescripcion());
         categoria.setEstado(t.getEstado());
 
-        Categoria catActualizada = categoriaRepository.save(categoria);
+        Categoria catActualizada = categoriaRepository.saveAndFlush(categoria);
 
         return convertirCategoria(catActualizada);
     }
@@ -114,3 +114,4 @@ public class CategoriaServiceImpl implements CategoriaService {
         return dto;
     }
 }
+

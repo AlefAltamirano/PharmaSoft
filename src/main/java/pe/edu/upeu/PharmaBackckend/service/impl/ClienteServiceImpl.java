@@ -78,7 +78,7 @@ public class ClienteServiceImpl
         cliente.setEstado(request.getEstado());
 
         Cliente guardado =
-                clienteRepository.save(cliente);
+                clienteRepository.saveAndFlush(cliente);
 
         log.info(
                 "Cliente registrado correctamente id={}",
@@ -176,7 +176,7 @@ public class ClienteServiceImpl
         cliente.setEstado(request.getEstado());
 
         Cliente actualizado =
-                clienteRepository.save(cliente);
+                clienteRepository.saveAndFlush(cliente);
 
         log.info(
                 "Cliente id={} actualizado correctamente",
@@ -242,3 +242,4 @@ public class ClienteServiceImpl
         return valor.trim();
     }
 }
+

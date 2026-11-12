@@ -12,7 +12,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class RequestIdFilter extends OncePerRequestFilter {
  protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain) throws ServletException, IOException {
-  String id = UUID.randomUUID().toString().substring(0,8);
+  String id = UUID.randomUUID().toString();
   MDC.put("requestId",id); res.setHeader("X-Request-Id",id);
   long inicio=System.nanoTime();
   try { chain.doFilter(req,res); } finally {

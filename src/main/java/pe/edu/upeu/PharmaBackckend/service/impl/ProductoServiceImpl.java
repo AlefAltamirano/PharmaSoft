@@ -52,7 +52,7 @@ public class ProductoServiceImpl implements ProductoService {
             producto.setEstado(t.getEstado());
             producto.setCategoria(categoria);
 
-            Producto productoGuardado = productoRepository.save(producto);
+            Producto productoGuardado = productoRepository.saveAndFlush(producto);
             return convertirProducto(productoGuardado);
         }
 
@@ -80,7 +80,7 @@ public class ProductoServiceImpl implements ProductoService {
             producto.setEstado(t.getEstado());
             producto.setCategoria(categoria);
 
-            Producto productoActualizado = productoRepository.save(producto);
+            Producto productoActualizado = productoRepository.saveAndFlush(producto);
             return convertirProducto(productoActualizado);
         }
 
@@ -101,7 +101,7 @@ public class ProductoServiceImpl implements ProductoService {
                     .orElseThrow(() -> new RecursosNoEncontradosException("Producto no encontrado con id: " + aLong));
             auditoria.publicar("PRODUCTO_ELIMINADO","Producto",producto.getId(),"Baja lógica del producto");
             producto.setEstado(false);
-            productoRepository.save(producto);
+            productoRepository.saveAndFlush(producto);
         }
 
         @Override
@@ -168,3 +168,4 @@ public class ProductoServiceImpl implements ProductoService {
         return dto;
         }
 }
+
