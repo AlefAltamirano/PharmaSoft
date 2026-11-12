@@ -203,6 +203,13 @@ public class ClienteServiceImpl
         );
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public java.util.List<ClienteResponseDTO> buscarActivos(String texto) {
+        return clienteRepository.buscarActivos(texto.trim(), org.springframework.data.domain.PageRequest.of(0,20,
+                org.springframework.data.domain.Sort.by("nombres").and(org.springframework.data.domain.Sort.by("id")))).map(this::convertirResponse).getContent();
+    }
+
     private ClienteResponseDTO convertirResponse(
             Cliente cliente) {
 

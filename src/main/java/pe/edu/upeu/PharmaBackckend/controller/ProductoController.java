@@ -28,6 +28,11 @@ public class ProductoController {
       return ResponseEntity.ok(productoService.listar(pagina,tamanio,ordenarPor,direccion,categoriaId));
     }
 
+    @GetMapping("/buscar")
+    public ResponseEntity<List<ProductoResponseDTO>> buscarDisponibles(@RequestParam(defaultValue="") String texto) {
+      return ResponseEntity.ok(productoService.buscarDisponibles(texto));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ProductoResponseDTO> findById(@PathVariable Long id) {
         return ResponseEntity.ok(productoService.read(id));

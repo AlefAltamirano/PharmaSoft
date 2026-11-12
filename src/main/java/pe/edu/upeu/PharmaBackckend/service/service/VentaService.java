@@ -10,4 +10,6 @@ public interface VentaService {
     VentaResponseDTO buscar(Long id);
     VentaResponseDTO anular(Long id);
     List<VentaResponseDTO> listar();
+    pe.edu.upeu.PharmaBackckend.dto.PaginaResponseDTO<VentaResponseDTO> buscar(Long clienteId,String estado,java.time.LocalDate desde,java.time.LocalDate hasta,int pagina,int tamanio);
+
 }

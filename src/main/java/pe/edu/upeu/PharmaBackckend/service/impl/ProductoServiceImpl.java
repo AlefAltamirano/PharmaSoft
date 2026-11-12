@@ -124,14 +124,15 @@ public class ProductoServiceImpl implements ProductoService {
         @Transactional(readOnly = true)
         @Cacheable(cacheNames = "productos", key = "'pagina-' + #p0 + '-' + #p1 + '-' + #p2 + '-' + #p3 + '-' + #p4")
         public pe.edu.upeu.PharmaBackckend.dto.PaginaResponseDTO<ProductoResponseDTO> listar(int pagina, int tamanio, String ordenarPor, String direccion, Long categoriaId) {
-            if (pagina < 0 || tamanio < 1 || tamanio > 1000 || !java.util.Set.of("id", "nombre", "precio", "stock").contains(ordenarPor)
-                || !java.util.Set.of("asc", "desc").contains(direccion)) {
-                throw new ReglaNegocioException("Parámetros de paginación u orden no válidos");
-            }
-            var sort = org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.fromString(direccion), ordenarPor).and(org.springframework.data.domain.Sort.by("id"));
-            var pageable = org.springframework.data.domain.PageRequest.of(pagina, tamanio, sort);
+            var pageable = pe.edu.upeu.PharmaBackckend.util.PaginacionUtil.construir(pagina,tamanio,ordenarPor,direccion,java.util.Set.of("id","nombre","precio","stock"));
             var resultado = categoriaId == null ? productoRepository.findAll(pageable) : productoRepository.findByCategoriaId(categoriaId, pageable);
             return new pe.edu.upeu.PharmaBackckend.dto.PaginaResponseDTO<>(resultado.getContent().stream().map(this::convertirProducto).toList(), pagina, tamanio, resultado.getTotalElements(), resultado.getTotalPages(), resultado.isLast());
+        }
+
+        @Override
+        @Transactional(readOnly = true)
+        public List<ProductoResponseDTO> buscarDisponibles(String texto) {
+            return productoRepository.buscarDisponibles(texto == null ? "" : texto.trim(),org.springframework.data.domain.PageRequest.of(0,20,org.springframework.data.domain.Sort.by("nombre").and(org.springframework.data.domain.Sort.by("id")))).map(this::convertirProducto).getContent();
         }
 
         private ProductoResponseDTO convertirProducto(Producto producto) {

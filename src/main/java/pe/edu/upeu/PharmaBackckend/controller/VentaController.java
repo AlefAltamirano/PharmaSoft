@@ -35,6 +35,15 @@ public class VentaController {
                 .body(response);
     }
 
+    @GetMapping("/buscar")
+    public ResponseEntity<pe.edu.upeu.PharmaBackckend.dto.PaginaResponseDTO<VentaResponseDTO>> buscarPagina(
+      @RequestParam(required=false) Long clienteId,@RequestParam(required=false) String estado,
+      @RequestParam(required=false) @org.springframework.format.annotation.DateTimeFormat(iso=org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate desde,
+      @RequestParam(required=false) @org.springframework.format.annotation.DateTimeFormat(iso=org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate hasta,
+      @RequestParam(defaultValue="0") int pagina,@RequestParam(defaultValue="20") int tamanio) {
+      return ResponseEntity.ok(ventaService.buscar(clienteId,estado,desde,hasta,pagina,tamanio));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<VentaResponseDTO> buscar(
             @PathVariable Long id) {
