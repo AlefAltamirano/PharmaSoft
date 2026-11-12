@@ -39,7 +39,7 @@ public class CategoriaServiceImpl implements CategoriaService {
         categoria.setDescripcion(t.getDescripcion());
         categoria.setEstado(t.getEstado());
 
-        Categoria catCategoria = categoriaRepository.save(categoria);
+        Categoria catCategoria = categoriaRepository.saveAndFlush(categoria);
 
         return convertirCategoria(catCategoria);
     }
@@ -60,7 +60,7 @@ public class CategoriaServiceImpl implements CategoriaService {
         categoria.setDescripcion(t.getDescripcion());
         categoria.setEstado(t.getEstado());
 
-        Categoria catActualizada = categoriaRepository.save(categoria);
+        Categoria catActualizada = categoriaRepository.saveAndFlush(categoria);
 
         return convertirCategoria(catActualizada);
     }
@@ -101,7 +101,7 @@ public class CategoriaServiceImpl implements CategoriaService {
     }
 
     private CategoriaResponseDTO convertirCategoria(Categoria categoria){
-        return new CategoriaResponseDTO(
+        var dto = new CategoriaResponseDTO(
                 categoria.getId(),
                 categoria.getNombre(),
                 categoria.getDescripcion(),
@@ -109,5 +109,9 @@ public class CategoriaServiceImpl implements CategoriaService {
                 categoria.getFechaCreacion(),
                 categoria.getFechaModificacion()
         );
+        dto.setCreadoPor(categoria.getCreadoPor());
+        dto.setModificadoPor(categoria.getModificadoPor());
+        return dto;
     }
 }
+

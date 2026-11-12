@@ -17,7 +17,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Venta {
+public class Venta extends CreacionAuditada {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

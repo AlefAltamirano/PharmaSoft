@@ -20,12 +20,14 @@ import java.util.List;
 
 @Service
 public class ProductoServiceImpl implements ProductoService {
+    private final pe.edu.upeu.PharmaBackckend.audit.AuditoriaEventos auditoria;
         private static final Logger LOG = LoggerFactory.getLogger(ProductoServiceImpl.class);
 
         private final ProductoRepository productoRepository;
         private final CategoriaRepository categoriaRepository;
 
-        public ProductoServiceImpl(ProductoRepository productoRepository, CategoriaRepository categoriaRepository) {
+        public ProductoServiceImpl(ProductoRepository productoRepository, CategoriaRepository categoriaRepository, pe.edu.upeu.PharmaBackckend.audit.AuditoriaEventos auditoria) {
+        this.auditoria=auditoria;
             this.productoRepository = productoRepository;
             this.categoriaRepository = categoriaRepository;
         }
@@ -50,7 +52,7 @@ public class ProductoServiceImpl implements ProductoService {
             producto.setEstado(t.getEstado());
             producto.setCategoria(categoria);
 
-            Producto productoGuardado = productoRepository.save(producto);
+            Producto productoGuardado = productoRepository.saveAndFlush(producto);
             return convertirProducto(productoGuardado);
         }
 
@@ -68,6 +70,9 @@ public class ProductoServiceImpl implements ProductoService {
             Categoria categoria = categoriaRepository.findById(t.getCategoriaId())
                     .orElseThrow(() -> new RecursosNoEncontradosException("Categoria no encontrada con id: " + t.getCategoriaId()));
 
+            if (producto.getPrecio().compareTo(t.getPrecio())!=0) {
+                auditoria.publicar("PRECIO_MODIFICADO","Producto",producto.getId(),"Precio anterior="+producto.getPrecio()+"; nuevo="+t.getPrecio());
+            }
             producto.setNombre(nombre);
             producto.setDescripcion(t.getDescripcion());
             producto.setPrecio(t.getPrecio());
@@ -75,7 +80,7 @@ public class ProductoServiceImpl implements ProductoService {
             producto.setEstado(t.getEstado());
             producto.setCategoria(categoria);
 
-            Producto productoActualizado = productoRepository.save(producto);
+            Producto productoActualizado = productoRepository.saveAndFlush(producto);
             return convertirProducto(productoActualizado);
         }
 
@@ -94,8 +99,9 @@ public class ProductoServiceImpl implements ProductoService {
         public void delete(Long aLong) {
             Producto producto = productoRepository.findById(aLong)
                     .orElseThrow(() -> new RecursosNoEncontradosException("Producto no encontrado con id: " + aLong));
+            auditoria.publicar("PRODUCTO_ELIMINADO","Producto",producto.getId(),"Baja lógica del producto");
             producto.setEstado(false);
-            productoRepository.save(producto);
+            productoRepository.saveAndFlush(producto);
         }
 
         @Override
@@ -124,14 +130,15 @@ public class ProductoServiceImpl implements ProductoService {
         @Transactional(readOnly = true)
         @Cacheable(cacheNames = "productos", key = "'pagina-' + #p0 + '-' + #p1 + '-' + #p2 + '-' + #p3 + '-' + #p4")
         public pe.edu.upeu.PharmaBackckend.dto.PaginaResponseDTO<ProductoResponseDTO> listar(int pagina, int tamanio, String ordenarPor, String direccion, Long categoriaId) {
-            if (pagina < 0 || tamanio < 1 || tamanio > 1000 || !java.util.Set.of("id", "nombre", "precio", "stock").contains(ordenarPor)
-                || !java.util.Set.of("asc", "desc").contains(direccion)) {
-                throw new ReglaNegocioException("Parámetros de paginación u orden no válidos");
-            }
-            var sort = org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.fromString(direccion), ordenarPor).and(org.springframework.data.domain.Sort.by("id"));
-            var pageable = org.springframework.data.domain.PageRequest.of(pagina, tamanio, sort);
+            var pageable = pe.edu.upeu.PharmaBackckend.util.PaginacionUtil.construir(pagina,tamanio,ordenarPor,direccion,java.util.Set.of("id","nombre","precio","stock"));
             var resultado = categoriaId == null ? productoRepository.findAll(pageable) : productoRepository.findByCategoriaId(categoriaId, pageable);
             return new pe.edu.upeu.PharmaBackckend.dto.PaginaResponseDTO<>(resultado.getContent().stream().map(this::convertirProducto).toList(), pagina, tamanio, resultado.getTotalElements(), resultado.getTotalPages(), resultado.isLast());
+        }
+
+        @Override
+        @Transactional(readOnly = true)
+        public List<ProductoResponseDTO> buscarDisponibles(String texto) {
+            return productoRepository.buscarDisponibles(texto == null ? "" : texto.trim(),org.springframework.data.domain.PageRequest.of(0,20,org.springframework.data.domain.Sort.by("nombre").and(org.springframework.data.domain.Sort.by("id")))).map(this::convertirProducto).getContent();
         }
 
         private ProductoResponseDTO convertirProducto(Producto producto) {
@@ -145,7 +152,7 @@ public class ProductoServiceImpl implements ProductoService {
                 );
             }
 
-            return new ProductoResponseDTO(
+            var dto = new ProductoResponseDTO(
                     producto.getId(),
                     producto.getNombre(),
                     producto.getDescripcion(),
@@ -156,5 +163,9 @@ public class ProductoServiceImpl implements ProductoService {
                     producto.getFechaModificacion(),
                     categoriaDTO
             );
+        dto.setCreadoPor(producto.getCreadoPor());
+        dto.setModificadoPor(producto.getModificadoPor());
+        return dto;
         }
 }
+

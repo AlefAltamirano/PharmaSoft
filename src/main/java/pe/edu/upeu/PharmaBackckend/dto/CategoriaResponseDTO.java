@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 
-public class CategoriaResponseDTO implements java.io.Serializable {
+public class CategoriaResponseDTO extends DatosAuditoriaDTO {
  private static final long serialVersionUID = 1L;
     private  Long id;
     private String nombre;

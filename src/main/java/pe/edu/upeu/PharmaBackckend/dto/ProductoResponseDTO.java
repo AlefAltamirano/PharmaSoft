@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Getter
 @Setter
-public class ProductoResponseDTO implements java.io.Serializable {
+public class ProductoResponseDTO extends DatosAuditoriaDTO {
  private static final long serialVersionUID = 1L;
     private Long id;
     private String nombre;

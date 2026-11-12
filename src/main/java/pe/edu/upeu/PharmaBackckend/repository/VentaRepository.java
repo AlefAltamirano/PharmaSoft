@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface VentaRepository extends JpaRepository<Venta, Long> {
+    @Query("select v from Venta v where (:clienteId is null or v.cliente.id=:clienteId) and (:estado is null or v.estado=:estado) and (:desde is null or v.fecha>=:desde) and (:hasta is null or v.fecha<:hasta)")
+    org.springframework.data.domain.Page<Venta> buscar(@org.springframework.data.repository.query.Param("clienteId") Long clienteId,@org.springframework.data.repository.query.Param("estado") pe.edu.upeu.PharmaBackckend.enums.EstadoVenta estado,@org.springframework.data.repository.query.Param("desde") LocalDateTime desde,@org.springframework.data.repository.query.Param("hasta") LocalDateTime hasta,org.springframework.data.domain.Pageable pageable);
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select v from Venta v where v.id = :id")
     Optional<Venta> buscarParaActualizar(Long id);

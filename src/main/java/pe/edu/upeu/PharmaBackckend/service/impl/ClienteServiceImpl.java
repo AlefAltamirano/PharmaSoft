@@ -17,6 +17,7 @@ import java.util.List;
 @Service
 public class ClienteServiceImpl
         implements ClienteService {
+    private final pe.edu.upeu.PharmaBackckend.audit.AuditoriaEventos auditoria;
 
     private static final Logger log =
             LoggerFactory.getLogger(ClienteServiceImpl.class);
@@ -24,7 +25,8 @@ public class ClienteServiceImpl
     private final ClienteRepository clienteRepository;
 
     public ClienteServiceImpl(
-            ClienteRepository clienteRepository) {
+            ClienteRepository clienteRepository, pe.edu.upeu.PharmaBackckend.audit.AuditoriaEventos auditoria) {
+        this.auditoria=auditoria;
         this.clienteRepository = clienteRepository;
     }
 
@@ -76,13 +78,14 @@ public class ClienteServiceImpl
         cliente.setEstado(request.getEstado());
 
         Cliente guardado =
-                clienteRepository.save(cliente);
+                clienteRepository.saveAndFlush(cliente);
 
         log.info(
                 "Cliente registrado correctamente id={}",
                 guardado.getId()
         );
 
+        auditoria.publicar("CLIENTE_REGISTRADO","Cliente",guardado.getId(),"Cliente registrado");
         return convertirResponse(guardado);
     }
 
@@ -173,7 +176,7 @@ public class ClienteServiceImpl
         cliente.setEstado(request.getEstado());
 
         Cliente actualizado =
-                clienteRepository.save(cliente);
+                clienteRepository.saveAndFlush(cliente);
 
         log.info(
                 "Cliente id={} actualizado correctamente",
@@ -203,10 +206,17 @@ public class ClienteServiceImpl
         );
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public java.util.List<ClienteResponseDTO> buscarActivos(String texto) {
+        return clienteRepository.buscarActivos(texto.trim(), org.springframework.data.domain.PageRequest.of(0,20,
+                org.springframework.data.domain.Sort.by("nombres").and(org.springframework.data.domain.Sort.by("id")))).map(this::convertirResponse).getContent();
+    }
+
     private ClienteResponseDTO convertirResponse(
             Cliente cliente) {
 
-        return new ClienteResponseDTO(
+        var dto = new ClienteResponseDTO(
                 cliente.getId(),
                 cliente.getDni(),
                 cliente.getNombres(),
@@ -218,6 +228,9 @@ public class ClienteServiceImpl
                 cliente.getFechaCreacion(),
                 cliente.getFechaModificacion()
         );
+        dto.setCreadoPor(cliente.getCreadoPor());
+        dto.setModificadoPor(cliente.getModificadoPor());
+        return dto;
     }
 
     private String normalizar(String valor) {
@@ -229,3 +242,4 @@ public class ClienteServiceImpl
         return valor.trim();
     }
 }
+

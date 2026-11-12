@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
-public class VentaResponseDTO {
+public class VentaResponseDTO extends DatosAuditoriaDTO {
 
     private Long id;
     private LocalDateTime fecha;

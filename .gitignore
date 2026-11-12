@@ -40,3 +40,5 @@ build/
 logs/
 evidence/
 *.pid
+/output/
+/tmp/

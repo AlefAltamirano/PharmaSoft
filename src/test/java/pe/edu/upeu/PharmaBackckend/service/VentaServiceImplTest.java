@@ -23,6 +23,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class VentaServiceImplTest {
+    @Mock pe.edu.upeu.PharmaBackckend.audit.AuditoriaEventos auditoria;
     @Mock VentaRepository ventas;
     @Mock ClienteRepository clientes;
     @Mock ProductoRepository productos;

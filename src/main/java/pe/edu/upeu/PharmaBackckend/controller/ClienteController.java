@@ -23,6 +23,11 @@ public class ClienteController {
                 .stream(clienteService.readAll().spliterator(), false).toList());
     }
 
+    @GetMapping("/buscar")
+    public java.util.List<pe.edu.upeu.PharmaBackckend.dto.ClienteResponseDTO> buscar(@RequestParam(defaultValue="") String texto) {
+      return clienteService.buscarActivos(texto);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ClienteResponseDTO> buscar(@PathVariable Long id) {
         return ResponseEntity.ok(clienteService.read(id));

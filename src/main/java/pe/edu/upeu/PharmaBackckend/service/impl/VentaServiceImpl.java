@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Comparator;
 @Service
 public class VentaServiceImpl implements VentaService {
+    private final pe.edu.upeu.PharmaBackckend.audit.AuditoriaEventos auditoria;
     private final VentaRepository ventaRepository;
     private final ClienteRepository clienteRepository;
     private final ProductoRepository productoRepository;
@@ -32,7 +33,8 @@ public class VentaServiceImpl implements VentaService {
     public VentaServiceImpl(
             VentaRepository ventaRepository,
             ClienteRepository clienteRepository,
-            ProductoRepository productoRepository) {
+            ProductoRepository productoRepository, pe.edu.upeu.PharmaBackckend.audit.AuditoriaEventos auditoria) {
+        this.auditoria=auditoria;
 
         this.ventaRepository = ventaRepository;
         this.clienteRepository = clienteRepository;
@@ -94,6 +96,7 @@ public class VentaServiceImpl implements VentaService {
         org.slf4j.LoggerFactory.getLogger(VentaServiceImpl.class)
                 .info("Venta registrada id={} items={}", guardada.getId(), guardada.getDetalles().size());
 
+        auditoria.publicar("VENTA_REGISTRADA","Venta",guardada.getId(),"Total="+guardada.getTotal()+"; líneas="+guardada.getDetalles().size());
         return convertirResponse(guardada);
     }
 
@@ -122,6 +125,7 @@ public class VentaServiceImpl implements VentaService {
                             .orElseThrow(() -> new RecursosNoEncontradosException("Producto de la venta no encontrado"));
                     producto.setStock(Math.addExact(producto.getStock(), detalle.getCantidad()));
                 });
+        auditoria.publicar("VENTA_ANULADA","Venta",venta.getId(),"Stock restituido");
         venta.setEstado(EstadoVenta.ANULADA);
         return convertirResponse(ventaRepository.save(venta));
     }
@@ -130,6 +134,17 @@ public class VentaServiceImpl implements VentaService {
     @Transactional(readOnly = true)
     public List<VentaResponseDTO> listar() {
         return ventaRepository.findAll().stream().map(this::convertirResponse).toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public pe.edu.upeu.PharmaBackckend.dto.PaginaResponseDTO<VentaResponseDTO> buscar(Long clienteId,String estado,java.time.LocalDate desde,java.time.LocalDate hasta,int pagina,int tamanio) {
+      if(desde!=null && hasta!=null && desde.isAfter(hasta)) throw new ReglaNegocioException("Rango de fechas inválido");
+      EstadoVenta filtro=null;
+      if(estado!=null && !estado.isBlank()) { try{filtro=EstadoVenta.valueOf(estado);}catch(IllegalArgumentException ex){throw new ReglaNegocioException("Estado de venta inválido");} }
+      var pageable=pe.edu.upeu.PharmaBackckend.util.PaginacionUtil.construir(pagina,tamanio,"fecha","desc",java.util.Set.of("fecha"));
+      var resultado=ventaRepository.buscar(clienteId,filtro,desde==null?null:desde.atStartOfDay(),hasta==null?null:hasta.plusDays(1).atStartOfDay(),pageable);
+      return new pe.edu.upeu.PharmaBackckend.dto.PaginaResponseDTO<>(resultado.getContent().stream().map(this::convertirResponse).toList(),pagina,tamanio,resultado.getTotalElements(),resultado.getTotalPages(),resultado.isLast());
     }
 
     private VentaResponseDTO convertirResponse(Venta venta) {
@@ -149,7 +164,7 @@ public class VentaServiceImpl implements VentaService {
 
         String clienteNombre = venta.getCliente().getNombres()+ " "+ venta.getCliente().getApellidos();
 
-        return new VentaResponseDTO(
+        var dto = new VentaResponseDTO(
                 venta.getId(),
                 venta.getFecha(),
                 venta.getCliente().getId(),
@@ -158,5 +173,7 @@ public class VentaServiceImpl implements VentaService {
                 venta.getTotal(),
                 detalles
         );
+        dto.setCreadoPor(venta.getCreadoPor());
+        return dto;
     }
 }
