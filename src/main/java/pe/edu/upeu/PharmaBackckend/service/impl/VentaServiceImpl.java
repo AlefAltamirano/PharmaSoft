@@ -1,6 +1,7 @@
 package pe.edu.upeu.PharmaBackckend.service.impl;
 
 import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.transaction.annotation.Transactional;
 import pe.edu.upeu.PharmaBackckend.dto.DetalleVentaRequestDTO;
 import pe.edu.upeu.PharmaBackckend.dto.DetalleVentaResponseDTO;
@@ -40,6 +41,7 @@ public class VentaServiceImpl implements VentaService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = "productos", allEntries = true)
     public VentaResponseDTO registrar(VentaRequestDTO request) {
         Cliente cliente = clienteRepository.findById(request.getClienteId())
                 .orElseThrow(() ->new RecursosNoEncontradosException("Cliente no encontrado con id: "+ request.getClienteId()));
@@ -89,6 +91,8 @@ public class VentaServiceImpl implements VentaService {
         venta.setTotal(total);
 
         Venta guardada =ventaRepository.save(venta);
+        org.slf4j.LoggerFactory.getLogger(VentaServiceImpl.class)
+                .info("Venta registrada id={} items={}", guardada.getId(), guardada.getDetalles().size());
 
         return convertirResponse(guardada);
     }
@@ -104,6 +108,7 @@ public class VentaServiceImpl implements VentaService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = "productos", allEntries = true)
     public VentaResponseDTO anular(Long id) {
         Venta venta = ventaRepository.buscarParaActualizar(id)
                 .orElseThrow(() -> new RecursosNoEncontradosException("Venta no encontrada con id: " + id));

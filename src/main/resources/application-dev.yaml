@@ -29,3 +29,7 @@ app:
   jwt:
     secret: VGhpc0lzQVN1ZmZpY2llbnRseUxvbmdTZWNyZXRGb3JEZXZlbG9wbWVudE9ubHlLZXk=
     expiracion-minutos: ${JWT_EXPIRACION_MINUTOS:60}
+
+logging:
+  pattern:
+    console: "%d %-5level [%X{requestId}] %logger{36} - %msg%n"

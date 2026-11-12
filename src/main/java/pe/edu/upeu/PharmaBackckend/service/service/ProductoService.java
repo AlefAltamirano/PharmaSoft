@@ -7,5 +7,6 @@ import pe.edu.upeu.PharmaBackckend.service.generic.CrutService;
 import java.util.List;
 
 public interface ProductoService extends CrutService<ProductoRequestDTO, ProductoResponseDTO, Long> {
+    pe.edu.upeu.PharmaBackckend.dto.PaginaResponseDTO<ProductoResponseDTO> listar(int pagina, int tamanio, String ordenarPor, String direccion, Long categoriaId);
     List<ProductoResponseDTO> findByCategoriaId(Long categoriaId);
 }
